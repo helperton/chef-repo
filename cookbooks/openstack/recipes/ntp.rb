@@ -2,6 +2,7 @@ package "ntp" do
 	action :install
 end
 
-template "ntp.conf" do
-	source "ntp.conf.erb"
+service "ntpd" do
+  supports :status => true, :restart => true, :reload => true
+  action [ :enable, :start ]
 end
