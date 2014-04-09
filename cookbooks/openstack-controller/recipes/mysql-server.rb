@@ -5,7 +5,7 @@ package "mysql-server" do
 end
 
 template "/etc/my.cnf" do
-	source "my.cnf.erb"
+  source "my.cnf.erb"
 end
 
 service "mysqld" do

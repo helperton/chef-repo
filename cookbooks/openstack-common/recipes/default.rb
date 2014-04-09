@@ -6,6 +6,7 @@
 #
 # All rights reserved - Do Not Redistribute
 #
+include_recipe "openstack-common::hostname" 
 include_recipe "openstack-common::epel_repo" 
 include_recipe "openstack-common::openstack-icehouse_repo" 
 include_recipe "openstack-common::mysql-client" 

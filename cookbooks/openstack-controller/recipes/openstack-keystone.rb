@@ -28,6 +28,28 @@ bash "openstack-admin-token_keystone" do
 	EOF
 end
 
+bash "openstack-pki-certs_keystone" do
+	code <<-EOF
+	keystone-manage pki_setup --keystone-user keystone --keystone-group keystone
+	EOF
+	not_if { ::File.exists?("/etc/keystone/ssl/private/signing_key.pem") }
+end
+
+bash "openstack-chown_keystone" do
+	code <<-EOF
+	chown -R keystone:keystone /etc/keystone/* /var/log/keystone/keystone*.log
+	EOF
+end
+
+# Consider this in production to prune expired tokens
+#bash "openstack-token-cron_keystone" do
+#	code <<-EOF
+#	(crontab -l 2>&1 | grep -q token_flush) || \
+#	echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1' >> /var/spool/cron/root
+#	EOF
+#end
+
+
 #template "/etc/qpidd.conf" do
 #	source "qpidd.conf.erb"
 #end
