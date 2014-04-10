@@ -41,6 +41,11 @@ bash "openstack-chown_keystone" do
 	EOF
 end
 
+service "openstack-keystone" do
+  supports :status => true, :restart => true, :reload => true
+  action [ :enable, :start ]
+end
+
 # Consider this in production to prune expired tokens
 #bash "openstack-token-cron_keystone" do
 #	code <<-EOF
@@ -54,8 +59,4 @@ end
 #	source "qpidd.conf.erb"
 #end
 
-#service "qpidd" do
-#	  supports :status => true, :restart => true, :reload => true
-#		  action [ :enable, :start ]
-#end
 
