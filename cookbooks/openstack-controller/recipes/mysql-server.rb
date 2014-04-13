@@ -1,5 +1,12 @@
 include_recipe "openstack-common::expect"
 
+bash "mysql-dev_repo" do
+	code <<-EOF
+	rpm -ivh http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm
+	EOF
+	not_if { ::File.exists?("/etc/yum.repos.d/mysql-community.repo") }
+end
+
 package "mysql-server" do
   action :install
 end
@@ -22,15 +29,16 @@ end
 
 bash "mysql_secure_installation" do
 	code <<-EOF
+	puts "Starting MySQL secure install expect script."
 	/usr/bin/expect -c 'spawn mysql_secure_installation
 	expect "Enter current password for root (enter for none):"
 	send "\r"
 	expect "Set root password?"
 	send "y\r"
 	expect "New password:"
-	send "#{data_bag_item('passwords','openstack_passwords')['MYSQL_ROOT_PASS']}\r"
+	send "#{data_bag_item('openstack','openstack_service_passwords')['MYSQL_ROOT_PASS']}\r"
 	expect "Re-enter new password:"
-	send "#{data_bag_item('passwords','openstack_passwords')['MYSQL_ROOT_PASS']}\r"
+	send "#{data_bag_item('openstack','openstack_service_passwords')['MYSQL_ROOT_PASS']}\r"
 	expect "Remove anonymous users?"
 	send "y\r"
 	expect "Disallow root login remotely?"
@@ -42,5 +50,5 @@ bash "mysql_secure_installation" do
 	puts "Ended expect script."
 	expect eof'
 	EOF
-	only_if { ::Dir.exists?("/var/lib/mysql/test") }
+	only_if { system("echo quit|mysql -uroot") }
 end

@@ -7,6 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 include_recipe "openstack-common"
+include_recipe "openstack-controller::networking"
 include_recipe "openstack-controller::mysql-server"
 include_recipe "openstack-controller::qpid-cpp-server"
 include_recipe "openstack-controller::python-keystoneclient"

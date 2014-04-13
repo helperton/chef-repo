@@ -1,8 +1,8 @@
 [mysqld]
 default-storage-engine = innodb
-#collation-server = utf8_general_ci
-#init-connect = 'SET NAMES utf8'
-#characters-set-server = utf8
+collation-server = utf8_general_ci
+init-connect = 'SET NAMES utf8'
+character-set-server = utf8
 bind-address = <%= node.ipaddress %>
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
