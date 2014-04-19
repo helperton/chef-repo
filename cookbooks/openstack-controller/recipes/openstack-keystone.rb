@@ -1,12 +1,16 @@
+$passwords = data_bag_item("openstack","openstack_service_passwords")
+$endpoints = data_bag_item("openstack","openstack_service_endpoints")
+$users = data_bag_item("openstack","openstack_users")
+
 package "openstack-keystone" do
 	action :install
 end
 
 bash "openstack-config_keystone" do
 	code <<-EOF
-	/usr/bin/expect -c 'spawn openstack-config --set /etc/keystone/keystone.conf database connection mysql://keystone:#{data_bag_item('openstack','openstack_passwords')['KEYSTONE_DBPASS']}@controller/keystone
+	/usr/bin/expect -c 'spawn openstack-config --set /etc/keystone/keystone.conf database connection mysql://keystone:#{$passwords['keystone']}@#{node.name}/keystone
 	expect "Please enter the password for the 'root' MySQL user:"
-  send "#{data_bag_item('openstack','openstack_passwords')['MYSQL_ROOT_PASS']}\r"
+  send "#{$passwords['mysql_root']}\r"
 	expect eof'
   EOF
 	not_if { ::Dir::exists?("/var/lib/mysql/keystone") }
@@ -14,9 +18,9 @@ end
 
 bash "openstack-db_keystone" do
 	code <<-EOF
-	/usr/bin/expect -c 'spawn openstack-db --init --service keystone --password #{data_bag_item('openstack','openstack_passwords')['KEYSTONE_DBPASS']}
+	/usr/bin/expect -c 'spawn openstack-db --init --service keystone --password #{$passwords['keystone']}
 	expect "Please enter the password for the 'root' MySQL user:"
-  send "#{data_bag_item('openstack','openstack_passwords')['MYSQL_ROOT_PASS']}\r"
+  send "#{$passwords['mysql_root']}\r"
 	expect eof'
   EOF
 	not_if { ::Dir::exists?("/var/lib/mysql/keystone") }
@@ -24,7 +28,7 @@ end
 
 bash "openstack-admin-token_keystone" do
 	code <<-EOF
-  openstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token #{data_bag_item('openstack','openstack_passwords')['KEYSTONE_ADMIN_TOK']}
+  openstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token #{$users['keystone']['admin']['token']}
 	EOF
 end
 
@@ -43,7 +47,33 @@ end
 
 service "openstack-keystone" do
   supports :status => true, :restart => true, :reload => true
-  action [ :enable, :start ]
+  action [ :enable, :start, :reload ]
+end
+
+bash "openstack-create-admin_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} user-create --name="admin" --pass="#{$users['keystone']['admin']['password']}" --email="#{$users['keystone']['admin']['email']}"
+	EOF
+	not_if { system("keystone user-get admin >/dev/null") }
+end
+
+bash "openstack-create-admin-role_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} role-create --name=admin
+	EOF
+end
+
+bash "openstack-create-admin-tenant_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} tenant-create --name=admin --description="Admin Tenant"
+	EOF
+end
+
+bash "openstack-link-admin-to-tenant_and_roles_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} user-role-add --user=admin --tenant=admin --role=admin
+	keystone #{Helpers.auth} user-role-add --user=admin --tenant=admin --role=_member_
+	EOF
 end
 
 # Consider this in production to prune expired tokens
