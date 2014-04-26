@@ -54,26 +54,29 @@ bash "openstack-create-admin_keystone" do
 	code <<-EOF
 	keystone #{Helpers.auth} user-create --name="admin" --pass="#{$users['keystone']['admin']['password']}" --email="#{$users['keystone']['admin']['email']}"
 	EOF
-	not_if { system("keystone user-get admin >/dev/null") }
+	not_if { /admin/ =~ `keystone #{Helpers.auth} user-get admin` }
 end
 
 bash "openstack-create-admin-role_keystone" do
 	code <<-EOF
 	keystone #{Helpers.auth} role-create --name=admin
 	EOF
+	not_if { /admin/ =~ `keystone #{Helpers.auth} role-get admin` }
 end
 
 bash "openstack-create-admin-tenant_keystone" do
 	code <<-EOF
 	keystone #{Helpers.auth} tenant-create --name=admin --description="Admin Tenant"
 	EOF
+	not_if { /admin/ =~ `keystone #{Helpers.auth} tenant-get admin` }
 end
 
-bash "openstack-link-admin-to-tenant_and_roles_keystone" do
+bash "openstack-link-admin-to-tenant-and-roles_keystone" do
 	code <<-EOF
 	keystone #{Helpers.auth} user-role-add --user=admin --tenant=admin --role=admin
 	keystone #{Helpers.auth} user-role-add --user=admin --tenant=admin --role=_member_
 	EOF
+	not_if { /admin/ =~ `keystone #{Helpers.auth} user-role-list --user admin --tenant admin` and /_member_/ =~ `keystone #{Helpers.auth} user-role-list --user admin --tenant admin` }
 end
 
 # Consider this in production to prune expired tokens

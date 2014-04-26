@@ -7,10 +7,12 @@
 # All rights reserved - Do Not Redistribute
 #
 include_recipe "openstack-common::hostname" 
+include_recipe "openstack-common::networking" 
 include_recipe "openstack-common::epel_repo" 
 include_recipe "openstack-common::openstack-icehouse_repo" 
 include_recipe "openstack-common::mysql-client" 
 include_recipe "openstack-common::ntp" 
+include_recipe "openstack-common::lsof" 
 include_recipe "openstack-common::wget" 
 include_recipe "openstack-common::openssl" 
 include_recipe "openstack-common::tcpdump" 
