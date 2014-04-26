@@ -1,0 +1,3 @@
+# Run chef-client every 5 minutes
+*/5 * * * * root chef-client
+
