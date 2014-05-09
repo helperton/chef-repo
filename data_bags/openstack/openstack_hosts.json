@@ -1,0 +1,10 @@
+{
+  "id": "openstack_hosts",
+  "stack-con01": {
+			"eth0": {
+				"ipaddr": "10.0.0.11",
+				"netmask": "255.255.255.0",
+				"gateway": "10.0.0.1"
+			}
+  }
+}

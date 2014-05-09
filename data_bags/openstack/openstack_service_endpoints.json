@@ -1,0 +1,11 @@
+{
+  "id": "openstack_service_endpoints",
+  "KEYSTONE": "http://stack-con01.ostack.com:35357/v2.0",
+  "GLANCE": "http://stack-con01.ostack.com",
+  "NOVA": "http://stack-con01.ostack.com:",
+  "DASH": "http://stack-con01.ostack.com:",
+  "CINDER": "http://stack-con01.ostack.com:",
+  "NEUTRON": "http://stack-con01.ostack.com:",
+  "HEAT": "http://stack-con01.ostack.com:",
+  "CEILOMETER": "http://stack-con01.ostack.com:"
+}

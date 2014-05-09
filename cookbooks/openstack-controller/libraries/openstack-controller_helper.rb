@@ -1,6 +1,6 @@
 module Helpers
 	def self.auth
-		  "--os-endpoint \"#{$endpoints['keystone']}\" --os-token \"#{$users['keystone']['admin']['token']}\""
+		  "--os-endpoint \"#{$endpoints['keystone']['admin']}\" --os-token \"#{$users['keystone']['admin']['token']}\""
 	end
 end
 

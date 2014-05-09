@@ -1,0 +1,10 @@
+{
+  "id": "openstack_users",
+  "keystone": {
+			"admin": {
+				"name": "admin",
+    		"password": "admin",
+    		"email": "root"
+			}
+  }
+}

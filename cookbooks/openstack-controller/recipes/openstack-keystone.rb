@@ -54,21 +54,21 @@ bash "openstack-create-admin_keystone" do
 	code <<-EOF
 	keystone #{Helpers.auth} user-create --name="admin" --pass="#{$users['keystone']['admin']['password']}" --email="#{$users['keystone']['admin']['email']}"
 	EOF
-	not_if { /admin/ =~ `keystone #{Helpers.auth} user-get admin` }
+	not_if { /admin/ =~ `keystone #{Helpers.auth} user-get admin 2>/dev/null` }
 end
 
 bash "openstack-create-admin-role_keystone" do
 	code <<-EOF
 	keystone #{Helpers.auth} role-create --name=admin
 	EOF
-	not_if { /admin/ =~ `keystone #{Helpers.auth} role-get admin` }
+	not_if { /admin/ =~ `keystone #{Helpers.auth} role-get admin 2>/dev/null` }
 end
 
 bash "openstack-create-admin-tenant_keystone" do
 	code <<-EOF
 	keystone #{Helpers.auth} tenant-create --name=admin --description="Admin Tenant"
 	EOF
-	not_if { /admin/ =~ `keystone #{Helpers.auth} tenant-get admin` }
+	not_if { /admin/ =~ `keystone #{Helpers.auth} tenant-get admin 2>dev/null` }
 end
 
 bash "openstack-link-admin-to-tenant-and-roles_keystone" do
@@ -79,6 +79,49 @@ bash "openstack-link-admin-to-tenant-and-roles_keystone" do
 	not_if { /admin/ =~ `keystone #{Helpers.auth} user-role-list --user admin --tenant admin` and /_member_/ =~ `keystone #{Helpers.auth} user-role-list --user admin --tenant admin` }
 end
 
+bash "openstack-create-demo_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} user-create --name="demo" --pass="#{$users['keystone']['demo']['password']}" --email="#{$users['keystone']['demo']['email']}"
+	EOF
+	not_if { /demo/ =~ `keystone #{Helpers.auth} user-get demo 2>/dev/null` }
+end
+
+bash "openstack-create-demo-tenant_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} tenant-create --name=demo --description="Demo Tenant"
+	EOF
+	not_if { /demo/ =~ `keystone #{Helpers.auth} tenant-get demo 2>dev/null` }
+end
+
+bash "openstack-link-demo-to-tenant-and-roles_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} user-role-add --user=demo --tenant=demo --role=_member_
+	EOF
+	not_if { /_member_/ =~ `keystone #{Helpers.auth} user-role-list --user demo --tenant demo` }
+end
+
+bash "openstack-create-service-tenant_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} tenant-create --name=service --description="Service Tenant"
+	EOF
+	not_if { /service/ =~ `keystone #{Helpers.auth} tenant-get service 2>dev/null` }
+end
+
+bash "openstack-create-service-entry_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} service-create --name=keystone --type=identity	--description="OpenStack Identity"
+	EOF
+	not_if { /keystone/ =~ `keystone #{Helpers.auth} service-get keystone 2>dev/null` }
+end
+
+bash "openstack-create-endpoint_keystone" do
+	code <<-EOF
+	keystone #{Helpers.auth} endpoint-create --service-id=$(keystone #{Helpers.auth} service-list | awk '/ identity / {print $2}') --publicurl=#{$endpoints['keystone']['public']} --internalurl=#{$endpoints['keystone']['internal']} --adminurl=#{$endpoints['keystone']['admin']}
+	EOF
+	# For some bizzare reason, endpoint-list default output is stderr and not stdout
+	not_if { pattern = `keystone #{Helpers.auth} endpoint-list`; !!(/35357/ =~ pattern and /5000/ =~ pattern) }
+end
+	
 # Consider this in production to prune expired tokens
 #bash "openstack-token-cron_keystone" do
 #	code <<-EOF
